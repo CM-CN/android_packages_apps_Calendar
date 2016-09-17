@@ -149,6 +149,7 @@ public class AgendaFragment extends Fragment implements CalendarController.Event
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
+
         int screenWidth = mActivity.getResources().getDisplayMetrics().widthPixels;
         View v = inflater.inflate(R.layout.agenda_fragment, null);
 
@@ -174,7 +175,6 @@ public class AgendaFragment extends Fragment implements CalendarController.Event
         if (lv != null) {
             Adapter a = mAgendaListView.getAdapter();
             lv.setAdapter(a);
-
             if (a instanceof HeaderViewListAdapter) {
                 mAdapter = (AgendaWindowAdapter) ((HeaderViewListAdapter)a).getWrappedAdapter();
                 if (mLaunchedInShareMode) {
@@ -186,12 +186,10 @@ public class AgendaFragment extends Fragment implements CalendarController.Event
                 }
                 lv.setIndexer(mAdapter);
                 lv.setHeaderHeightListener(mAdapter);
-
             } else if (a instanceof AgendaWindowAdapter) {
                 mAdapter = (AgendaWindowAdapter)a;
                 lv.setIndexer(mAdapter);
                 lv.setHeaderHeightListener(mAdapter);
-
             } else {
                 Log.wtf(TAG, "Cannot find HeaderIndexer for StickyHeaderListView");
             }

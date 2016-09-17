@@ -26,9 +26,6 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.ObjectAnimator;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -38,7 +35,6 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -67,7 +63,6 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -87,7 +82,6 @@ import com.android.calendar.year.YearViewPagerFragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -325,6 +319,9 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
 
     @Override
     protected void onCreate(Bundle icicle) {
+        if (RequestPermissionsActivity.startPermissionActivity(this)) {
+            finish();
+        }
         if (Utils.getSharedPreference(this, OtherPreferences.KEY_OTHER_1, false)) {
             setTheme(R.style.CalendarTheme_WithActionBarWallpaper);
         }
@@ -465,7 +462,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
             getLoaderManager().initLoader(0, null, this);
         }
 
-        // clean up cached ics and vcs files - in case onDestroy() didn't run the last time
+        // Clean up cached ics and vcs files - in case onDestroy() didn't run the last time
         cleanupCachedEventFiles();
     }
 
@@ -658,7 +655,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
 
         CalendarController.removeInstance(this);
 
-        // clean up cached ics and vcs files
+        // Clean up cached ics and vcs files
         cleanupCachedEventFiles();
     }
 
@@ -822,11 +819,6 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
             getLoaderManager().initLoader(0, null, this);
         }
 
-        MenuItem goToMenu = menu.findItem(R.id.action_goto);
-        if (!getResources().getBoolean(R.bool.show_goto_menu)) {
-            goToMenu.setVisible(false);
-        }
-
         MenuItem menuItem = menu.findItem(R.id.action_today);
         if (Utils.isJellybeanOrLater()) {
             // replace the default top layer drawable of the today icon with a
@@ -836,7 +828,6 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
         } else {
             menuItem.setIcon(R.drawable.ic_menu_today_no_date_holo_light);
         }
-
         return true;
     }
 
@@ -895,12 +886,6 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
             return false;
         } else if (itemId == R.id.action_delete_events) {
             startActivity(new Intent(this, DeleteEventsActivity.class));
-            return true;
-        } else if (itemId == R.id.action_goto) {
-            // Get the current time to display in Dialog.
-            String timeZone = mTimeZone;
-            GoToDialogFragment goToFrg = GoToDialogFragment.newInstance(timeZone);
-            goToFrg.show(getFragmentManager(), "goto");
             return true;
         } else if (itemId == R.id.action_import) {
             ImportActivity.pickImportFile(this);
@@ -1102,7 +1087,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
                 Log.d(TAG, "setMainPane AllInOne=" + this + " finishing:" + this.isFinishing());
             }
             ft.commit();
-            showFab();      // reset FAB after every transaction ; on every refresh of main_pane
+            showFab();      // Reset FAB after every transaction; on every refresh of main_pane
         }
     }
 
@@ -1338,7 +1323,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
     private void showFab() {
         if (!mFabShowing) {
             mFab.animate()
-                    .translationY(0)    // move FAB to the originally specified location in layout
+                    .translationY(0)    // Move FAB to the originally specified location in layout
                     .setDuration(mFabAnimDuration)
                     .setInterpolator(new OvershootInterpolator());
 
@@ -1492,7 +1477,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
 
         MenuItem delEventsMenu = mOptionsMenu.findItem(R.id.action_delete_events);
         if (delEventsMenu != null) {
-            if (cursor.getCount() == 0) {
+            if (cursor == null || cursor.getCount() == 0) {
                 delEventsMenu.setEnabled(false);
             } else {
                 delEventsMenu.setEnabled(true);
@@ -1502,60 +1487,7 @@ public class AllInOneActivity extends AbstractCalendarActivity implements EventH
 
     @Override
     public void onLoaderReset(Loader<Cursor> arg0) {
-        // Do nothing.
+        // Do nothing
         return;
-    }
-
-    public static class GoToDialogFragment extends DialogFragment implements
-            DatePickerDialog.OnDateSetListener {
-        private static final String KEY_TIMEZONE = "timezone";
-        private static final String KEY_IS_CLICKED_DONE = "done";
-
-        public static GoToDialogFragment newInstance(String timeZone) {
-            GoToDialogFragment goToFrg = new GoToDialogFragment();
-            Bundle bundle = new Bundle();
-            bundle.putString(KEY_TIMEZONE, timeZone);
-            goToFrg.setArguments(bundle);
-            return goToFrg;
-        }
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            String timeZone = getArguments().getString(KEY_TIMEZONE);
-            Time t = new Time(timeZone);
-            Calendar calendar = Calendar.getInstance();
-            t.year = calendar.get(Calendar.YEAR);
-            t.month = calendar.get(Calendar.MONTH);
-            t.monthDay = calendar.get(Calendar.DATE);
-            DatePickerDialog dialog = new DatePickerDialog(getActivity(), this,
-                    t.year, t.month, t.monthDay) {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (which == DialogInterface.BUTTON_POSITIVE) {
-                        // Avoid touching dialog box outside cause it disappears also perform
-                        // actions. Limit perform only after the user confirms by click done.
-                        getArguments().putBoolean(KEY_IS_CLICKED_DONE, true);
-                    }
-                    super.onClick(dialog, which);
-                }
-            };
-
-            return dialog;
-        }
-
-        @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            if (getArguments().getBoolean(KEY_IS_CLICKED_DONE)) {
-                CalendarController controller = CalendarController.getInstance(getActivity());
-                String timeZone = getArguments().getString(KEY_TIMEZONE);
-                Time t = new Time(timeZone);
-                t.set(dayOfMonth, monthOfYear, year);
-                t.set(t.toMillis(false));
-                controller.sendEvent(this, EventType.GO_TO, null, null, t, -1,
-                        ViewType.CURRENT, CalendarController.EXTRA_GOTO_TIME,
-                        null, null);
-            }
-        }
     }
 }

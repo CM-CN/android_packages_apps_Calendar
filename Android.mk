@@ -9,7 +9,7 @@ timezonepicker_dir := ../../../frameworks/opt/timezonepicker/res
 res_dirs := $(chips_dir) $(color_picker_dir) $(datetimepicker_dir) $(timezonepicker_dir) res
 src_dirs := src
 
-LOCAL_EMMA_COVERAGE_FILTER := +com.android.calendar.*
+LOCAL_JACK_COVERAGE_INCLUDE_FILTER := com.android.calendar.*
 
 LOCAL_MODULE_TAGS := optional
 
@@ -32,9 +32,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
         android-support-v13 \
         calendar-common
 
-# Uncomment the following line to build against the current SDK
-# This is required for building an unbundled app.
-# LOCAL_SDK_VERSION := current
+LOCAL_SDK_VERSION := current
 
 LOCAL_RESOURCE_DIR := $(addprefix $(LOCAL_PATH)/, $(res_dirs))
 

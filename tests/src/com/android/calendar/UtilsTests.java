@@ -502,8 +502,8 @@ public class UtilsTests extends TestCase {
     }
 
     private void warnEquals(String expected, String result) {
-        // As we used the DateUtils to format the date, if the expected do not equals the
-        // result, we will print the log as warning.
+        // As we used the DateUtils to format the date, if the expected test result does not match
+        // the actual result, print the log as a warning.
         if (!expected.equals(result)) {
             Log.w("UtilsTests", "expect: [" + expected + "], but actual result: [" + result + "]");
         } else {

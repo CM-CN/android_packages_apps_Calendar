@@ -1,3 +1,19 @@
+/**
+ * Copyright (C) 2014-2016 The CyanogenMod Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.calendar.year;
 
 import android.content.Context;
@@ -25,16 +41,16 @@ import java.util.HashMap;
 public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener {
 
     /* Define configuration parameters for a month view */
-    // fraction of the view occupied by the header
+    // Fraction of the view occupied by the header
     private static final double MONTH_HEADER_HEIGHT = 0.25;
 
-    // fraction of the header to use for the month title text
+    // Fraction of the header to use for the month title text
     private static final double MONTH_LABEL_FONT_SIZE = MONTH_HEADER_HEIGHT * 0.30;
 
-    // fraction of the view to use as padding along one edge
+    // Fraction of the view to use as padding along one edge
     private static final double PADDING = 0.05;
 
-    // fraction of the view to use for text
+    // Fraction of the view to use for text
     private static final double MONTH_DAY_TEXT_SIZE = (1 - (2 * PADDING)) * (0.5)  / 7;
 
     // The padding b/w the week rows. The container height sans that taken up by the header
@@ -49,10 +65,10 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
     private int mYear;
     private int mCurrentMonth = -1;
 
-    private int mColumns;       // number of columns the months will be dispersed into
-    private int mWidth;         // dimensions of the container housing the entire year view
+    private int mColumns;       // Number of columns the months will be dispersed into
+    private int mWidth;         // Dimensions of the container housing the entire year view
     private int mHeight;
-    private int mMonthWidth;    // dimensions of each month inside the year view
+    private int mMonthWidth;    // Dimensions of each month inside the year view
     private int mMonthHeight;
     private int mCurrentMonthBgColor;
     private int mMonthTitleColor;
@@ -62,8 +78,8 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
     private View mClickedView;
     private long mClickTimestamp;
     private long mClickAnimDuration = ViewConfiguration.getTapTimeout() + 100;
-    private int mTouchSlop;     // threshold for click to scroll transition
-    private float mClickX;      // initial ACTION_DOWN coordinates
+    private int mTouchSlop;     // Threshold for click to scroll transition
+    private float mClickX;      // Initial ACTION_DOWN coordinates
     private float mClickY;
 
     public YearViewAdapter(Context context, int year, int columns) {
@@ -90,7 +106,7 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
     public void setBounds(int width, int height) {
         mWidth = width;
         mHeight = height;
-        // calculate the dimensions of each of the months
+        // Calculate the dimensions of each of the months
         mMonthWidth = mWidth / mColumns;
         mMonthHeight = mMonthWidth;
     }
@@ -112,7 +128,7 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         int month = position;
-        // each month view is nested inside a linear layout
+        // Each month view is nested inside a linear layout
         GreedyLinearLayout linearLayout = new GreedyLinearLayout(mContext);
         AbsListView.LayoutParams params = new AbsListView.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, mMonthHeight);
@@ -126,10 +142,10 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
             linearLayout.setBackgroundColor(mCurrentMonthBgColor);
         }
 
-        // the view that actually draws the calendar month
+        // The view that actually draws the calendar month
         MonthViewImpl monthView = new MonthViewImpl(mContext);
 
-        /* set view configuration parmeters */
+        /* Set view configuration parmeters */
         HashMap<String, Integer> configureParams = new HashMap<String, Integer>();
         configureParams.put(MonthView.VIEW_PARAMS_YEAR, mYear);
         configureParams.put(MonthView.VIEW_PARAMS_MONTH, month);
@@ -139,27 +155,27 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
         // The drawing parameters are calculated based on the actual container dimensions and the
         // statically defined fraction components
         HashMap<String, Integer> drawingParams = new HashMap<String, Integer>();
-        // padding in pixels ; applies to the left and right edges
+        // Padding in pixels ; applies to the left and right edges
         drawingParams.put(MonthView.CONFIG_EDGE_PADDING, (int) (mMonthWidth * PADDING));
-        // add Month title header height
+        // Add Month title header height
         drawingParams.put(MonthView.CONFIG_HEADER_SIZE, (int) (mMonthHeight * MONTH_HEADER_HEIGHT));
-        // add Month label font size
+        // Add Month label font size
         drawingParams.put(MonthView.CONFIG_MONTH_LABEL_TEXT_SIZE,
                 (int) (mMonthHeight * MONTH_LABEL_FONT_SIZE));
 
-        // text size is chosen so that there isn't an overlap in the horizontal or vertical
+        // Text size is chosen so that there isn't an overlap in the horizontal or vertical
         // directions
         double textSize = Math.min(mMonthHeight * MONTH_DAY_TEXT_SIZE,
                 mMonthWidth * MONTH_DAY_TEXT_SIZE);
-        // add text size for month days
+        // Add text size for month days
         drawingParams.put(MonthView.CONFIG_MONTH_DAY_TEXT_SIZE, (int) textSize);
 
-        // header label flag
+        // Header label flag
         drawingParams.put(MonthView.CONFIG_MONTH_HEADER_LABEL_FLAGS,
                 DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NO_YEAR |
                 DateUtils.FORMAT_NO_MONTH_DAY);
 
-        // add horizontal padding
+        // Add horizontal padding
         drawingParams.put(MonthView.CONFIG_MONTH_ROW_HEIGHT,
                 (int) (mMonthHeight * ROW_HEIGHT));
         drawingParams.put(MonthView.CONFIG_FILL_PARENT_CONTAINER, 1);
@@ -192,12 +208,12 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
                 mClickX = event.getX();
                 mClickY = event.getY();
                 mClickedView = v;
-                // delay click acknowledgement to avoid view highlighting during scroll
+                // Delay click acknowledgement to avoid view highlighting during scroll
                 mClickedView.postDelayed(mHighlightView, ViewConfiguration.getTapTimeout());
                 break;
             case MotionEvent.ACTION_UP:
                 if (v == mClickedView) {
-                    // avoid abrupt transitions in the UI by ensuring that the click animation
+                    // Avoid abrupt transitions in the UI by ensuring that the click animation
                     // persists for the minimum defined duration
                     long tapDuration = System.currentTimeMillis() - mClickTimestamp;
                     long delay = (tapDuration > mClickAnimDuration) ?
@@ -206,7 +222,7 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                // clear view highlighting when the gesture becomes a scroll
+                // Clear view highlighting when the gesture becomes a scroll
                 if ((Math.abs(event.getX() - mClickX) > mTouchSlop) ||
                         (Math.abs(event.getY() - mClickY) > mTouchSlop)) {
                     clearClickedView(v);
@@ -227,7 +243,7 @@ public class YearViewAdapter extends BaseAdapter implements View.OnTouchListener
     private void clearClickedView(View v) {
         v.removeCallbacks(mHighlightView);
         synchronized (v) {
-            // restore the right bg color
+            // Restore the right BG color
             if (v.getId() == mCurrentMonth) {
                 v.setBackgroundColor(mCurrentMonthBgColor);
             } else {

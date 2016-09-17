@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2014 The CyanogenMod Open Source Project
+/**
+ * Copyright (C) 2014-2016 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
      */
     private void updateTitle(int year) {
         Time start = new Time(Time.getCurrentTimezone());
-        start.set(1, 0, year);                              // set(day, month, year)
+        start.set(1, 0, year);                              // Set(day, month, year)
         Time end = new Time(Time.getCurrentTimezone());
         end.set(31, 11, year);
         long formatFlags = DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NO_MONTH_DAY;
@@ -147,7 +147,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
 
     @Override
     public void handleEvent(EventInfo event) {
-        // handle "go to current time" action bar button click
+        // Handle "go to current time" action bar button click
         if (event.eventType == EventType.GO_TO) {
             goToYear(event.selectedTime.year);
         }
@@ -155,7 +155,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
 
     @Override
     public void eventsChanged() {
-        // nothing to do as this view doesn't depend on the underlying events database
+        // Nothing to do as this view doesn't depend on the underlying events database
     }
 
     /**
@@ -224,18 +224,18 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             mGridView = new CustomGridView(getActivity());
-            // set layout params ?
+            // Set layout params
             mGridView.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
             mGridView.setNumColumns(mColumns);
 
-            // we need to wait till the gridview is laid out
-            // the adapter drawing the year view depends on the dimensions of the grid view to
+            // We need to wait till the gridview is laid out
+            // The adapter drawing the year view depends on the dimensions of the grid view to
             // figure out the layout and size of each of the months and its parameters
             mGridView.getViewTreeObserver().addOnGlobalLayoutListener(
                     new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    // remove listener
+                    // Remove listener
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         mGridView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     } else {
@@ -245,7 +245,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
                     int gridWidth = mGridView.getWidth();
                     int gridHeight = mGridView.getHeight();
 
-                    // prepare adapter and supply the dimensions it has to work with
+                    // [repare adapter and supply the dimensions it has to work with
                     mAdapter = new YearViewAdapter(getActivity(), mYear, mColumns);
                     mAdapter.setBounds(gridWidth, gridHeight);
 
@@ -271,7 +271,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
             }
 
             /*
-              Overiding method to implement a scroll gesture listener which is interested in
+              Implement a scroll gesture listener which is interested in
               vertical movements to show or hide FAB
              */
             @Override
@@ -291,7 +291,7 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
             }
 
             /*
-              Overiding method to implement a scroll gesture listener which is interested in
+              Implement a scroll gesture listener which is interested in
               vertical movements to show or hide FAB
              */
             @Override
@@ -319,16 +319,16 @@ public class YearViewPagerFragment extends Fragment implements CalendarControlle
                 float distanceMoved = mClickY - ev.getY();
                 if (Math.abs(distanceMoved) > mTouchSlop ) {
                     if (distanceMoved < 0) {
-                        // scrolled down so show FAB
+                        // Scrolled down so show FAB
                         mController.sendEvent(this, EventType.SHOW_FAB, null, null, null,
                                 0, 0, 0, null, null);
                     } else {
-                        // scrolle up so hide FAB
+                        // Scrolled up so hide FAB
                         mController.sendEvent(this, EventType.HIDE_FAB, null, null, null,
                                 0, 0, 0, null, null);
 
                     }
-                    // set Y to the current place in the gesture
+                    // Set Y to the current place in the gesture
                     mClickY = ev.getY();
                 }
             }

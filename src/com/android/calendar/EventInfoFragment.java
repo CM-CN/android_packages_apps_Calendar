@@ -427,8 +427,8 @@ public class EventInfoFragment extends DialogFragment implements OnCheckedChange
 
     private QueryHandler mHandler;
 
-    // used to signal the completion of querying calendar event data
-    // note: runnable is executed on the ui thread
+    // Used to signal the completion of querying calendar event data
+    // Note: Runnable is executed on the UI thread
     private Runnable mQueryCompleteRunnable;
 
     private final Runnable mTZUpdater = new Runnable() {
@@ -1321,16 +1321,67 @@ public class EventInfoFragment extends DialogFragment implements OnCheckedChange
      * Generates an .ics formatted file with the event info and launches intent chooser to
      * share said file
      */
-    public void shareEvent(ShareType type) {
-        VCalendar calendar = generateVCalendar();
-        // create and share ics file
+    private void shareEvent(ShareType type) {
+        // Create the respective ICalendar objects from the event info
+        VCalendar calendar = new VCalendar();
+        calendar.addProperty(VCalendar.VERSION, "2.0");
+        calendar.addProperty(VCalendar.PRODID, VCalendar.PRODUCT_IDENTIFIER);
+        calendar.addProperty(VCalendar.CALSCALE, "GREGORIAN");
+        calendar.addProperty(VCalendar.METHOD, "REQUEST");
+
+        VEvent event = new VEvent();
+        mEventCursor.moveToFirst();
+        // Add event start and end datetime
+        if (!mAllDay) {
+            String eventTimeZone = mEventCursor.getString(EVENT_INDEX_EVENT_TIMEZONE);
+            event.addEventStart(mStartMillis, eventTimeZone);
+            event.addEventEnd(mEndMillis, eventTimeZone);
+        } else {
+            // All-day events' start and end time are stored as UTC.
+            // Treat the event start and end time as being in the local time zone and convert them
+            // to the corresponding UTC datetime. If the UTC time is used as is, the ical recipients
+            // will report the wrong start and end time (+/- 1 day) for the event as they will
+            // convert the UTC time to their respective local time-zones
+            String localTimeZone = Utils.getTimeZone(mActivity, mTZUpdater);
+            long eventStart = IcalendarUtils.convertTimeToUtc(mStartMillis, localTimeZone);
+            long eventEnd = IcalendarUtils.convertTimeToUtc(mEndMillis, localTimeZone);
+            event.addEventStart(eventStart, "UTC");
+            event.addEventEnd(eventEnd, "UTC");
+        }
+
+        event.addProperty(VEvent.LOCATION, mEventCursor.getString(EVENT_INDEX_EVENT_LOCATION));
+        event.addProperty(VEvent.DESCRIPTION, mEventCursor.getString(EVENT_INDEX_DESCRIPTION));
+        event.addProperty(VEvent.SUMMARY, mEventCursor.getString(EVENT_INDEX_TITLE));
+        event.addOrganizer(new Organizer(mEventOrganizerDisplayName, mEventOrganizerEmail));
+
+        // Add Attendees to event
+        for (Attendee attendee : mAcceptedAttendees) {
+            IcalendarUtils.addAttendeeToEvent(attendee, event);
+        }
+
+        for (Attendee attendee : mDeclinedAttendees) {
+            IcalendarUtils.addAttendeeToEvent(attendee, event);
+        }
+
+        for (Attendee attendee : mTentativeAttendees) {
+            IcalendarUtils.addAttendeeToEvent(attendee, event);
+        }
+
+        for (Attendee attendee : mNoResponseAttendees) {
+            IcalendarUtils.addAttendeeToEvent(attendee, event);
+        }
+
+        // Compose all of the ICalendar objects
+        calendar.addEvent(event);
+
+        // Create and share ics file
         boolean isShareSuccessful = false;
         try {
-            // event title serves as the file name prefix
+            // Event title serves as the file name prefix
             String filePrefix = calendar.getFirstEvent().getProperty(VEvent.SUMMARY);
             if (filePrefix == null || filePrefix.length() < 3) {
-                // default to a generic filename if event title doesn't qualify
-                // prefix length constraint is imposed by File#createTempFile
+                // Default to a generic filename if event title doesn't qualify
+                // Prefix length constraint is imposed by File#createTempFile
                 filePrefix = "invite";
             }
 
@@ -1354,11 +1405,11 @@ public class EventInfoFragment extends DialogFragment implements OnCheckedChange
 
             if (IcalendarUtils.writeCalendarToFile(calendar, inviteFile)) {
                 if (type == ShareType.INTENT) {
-                    inviteFile.setReadable(true, false);     // set world-readable
+                    inviteFile.setReadable(true, false);     // Set world-readable
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(inviteFile));
-                    // the ics file is sent as an extra, the receiving application decides whether
+                    // The ics file is sent as an extra, the receiving application decides whether
                     // to parse the file to extract calendar events or treat it as a regular file
                     shareIntent.setType("application/octet-stream");
 
@@ -1371,7 +1422,7 @@ public class EventInfoFragment extends DialogFragment implements OnCheckedChange
                     File vcsInviteFile = File.createTempFile(filePrefix, ".vcs",
                             mActivity.getExternalCacheDir());
 
-                    // for now , we are duplicating ics file and using that as the vcs file
+                    // For now, we are duplicating ics file and using that as the vcs file
                     // TODO: revisit above
                     if (IcalendarUtils.copyFile(inviteFile, vcsInviteFile)) {
                         Intent mmsShareIntent = new Intent();
@@ -1393,7 +1444,7 @@ public class EventInfoFragment extends DialogFragment implements OnCheckedChange
                 isShareSuccessful = true;
 
             } else {
-                // error writing event info to file
+                // Error writing event info to file
                 isShareSuccessful = false;
             }
         } catch (IOException e) {

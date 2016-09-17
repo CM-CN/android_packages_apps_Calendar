@@ -263,4 +263,5 @@
             android:contentDescription="@string/accessibility_reminder_privacy"
             android:prompt="@string/privacy_label" />
     </LinearLayout>
+
 </LinearLayout>

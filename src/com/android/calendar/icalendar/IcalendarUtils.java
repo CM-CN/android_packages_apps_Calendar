@@ -1,5 +1,17 @@
-/**
- * Copyright (C) 2014 The CyanogenMod Project
+/*
+ * Copyright (C) 2014-2016 The CyanogenMod Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.android.calendar.icalendar;
@@ -43,8 +55,8 @@ public class IcalendarUtils {
     }
 
     /**
-     * ensure the string conforms to the iCalendar encoding requirements
-     * escape line breaks , commas and semicolons
+     * Ensure the string conforms to the iCalendar encoding requirements
+     * Escape line breaks, commas and semicolons
      * @param sequence
      * @return
      */
@@ -52,9 +64,9 @@ public class IcalendarUtils {
         if (sequence == null) return null;
         String input = sequence.toString();
 
-        // replace new lines with the literal '\n'
+        // Replace new lines with the literal '\n'
         input = input.replaceAll("\\r|\\n|\\r\\n", "\\\\n");
-        // escape semicolons and commas
+        // Escape semicolons and commas
         input = input.replace(";", "\\;");
         input = input.replace(",", "\\,");
 
@@ -174,8 +186,6 @@ public class IcalendarUtils {
         try {
             outStream = new FileOutputStream(file);
             outStream.write(icsFormattedString.getBytes());
-        } catch (FileNotFoundException e) {
-            return false;
         } catch (IOException e) {
             return false;
         } finally {
@@ -198,28 +208,28 @@ public class IcalendarUtils {
         StringBuilder output = new StringBuilder();
         int length = input.length();
 
-        // bail if no work needs to be done
+        // Bail if no work needs to be done
         if (length <= sPermittedLineLength) {
             return input;
         }
 
         for (int i = 0, currentLineLength = 0; i < length; i++) {
             char currentChar = input.charAt(i);
-            if (currentChar == '\n') {          // new line encountered
+            if (currentChar == '\n') {          // New line encountered
                 output.append(currentChar);
-                currentLineLength = 0;          // reset char counter
+                currentLineLength = 0;          // Reset char counter
 
             } else if (currentChar != '\n' && currentLineLength <= sPermittedLineLength) {
-                // a non-newline char that can be part of the current line
+                // A non-newline char that can be part of the current line
                 output.append(currentChar);
                 currentLineLength++;
 
             } else if (currentLineLength > sPermittedLineLength) {
-                // need to branch out to a new line
-                // add a new line and a space - iCal requirement
+                // Need to branch out to a new line
+                // Add a new line and a space - iCal requirement
                 output.append("\n ");
                 output.append(currentChar);
-                currentLineLength = 2;          // already has 2 chars : space and currentChar
+                currentLineLength = 2;          // Already has 2 chars: space and currentChar
             }
         }
 
@@ -227,7 +237,7 @@ public class IcalendarUtils {
     }
 
     /**
-     * create an iCal Attendee with properties from CalendarModel attendee
+     * Create an iCal Attendee with properties from CalendarModel attendee
      *
      * @param attendee
      * @param event
@@ -260,7 +270,7 @@ public class IcalendarUtils {
     }
 
     /**
-     * returns an iCalendar formatted UTC date-time
+     * Returns an iCalendar formatted UTC date-time
      * ex: 20141120T120000Z for noon on Nov 20, 2014
      *
      * @param millis in epoch time
@@ -278,7 +288,7 @@ public class IcalendarUtils {
         String dateTime = simpleDateFormat.format(calendar.getTime());
         StringBuilder output = new StringBuilder(16);
 
-        // iCal UTC date format : <yyyyMMdd>T<HHmmss>Z
+        // iCal UTC date format: <yyyyMMdd>T<HHmmss>Z
         return output.append(dateTime.subSequence(0,8))
                 .append("T")
                 .append(dateTime.substring(8))
@@ -295,7 +305,7 @@ public class IcalendarUtils {
     public static long convertTimeToUtc(long millis, String localTimeZone) {
         if (millis < 0) return 0;
 
-        // remove the local time zone's UTC offset
+        // Remove the local time zone's UTC offset
         return millis - TimeZone.getTimeZone(localTimeZone).getRawOffset();
     }
 
@@ -321,18 +331,18 @@ public class IcalendarUtils {
                 }
                 isSuccessful = true;
             } catch (IOException e) {
-                // ignore
+                // Ignore
             }
 
         } catch (FileNotFoundException fnf) {
-            // ignore
+            // Ignore
         } finally {
 
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
+                    // Ignore
                 }
             }
 
@@ -340,7 +350,7 @@ public class IcalendarUtils {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    // ignore
+                    // Ignore
                 }
             }
         }
